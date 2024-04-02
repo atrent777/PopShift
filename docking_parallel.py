@@ -266,10 +266,10 @@ if __name__ == '__main__' or jug.is_jug_running():
                 if not docked_dir_path.is_dir():
                     docked_dir_path.mkdir(exist_ok=True, parents=True)
                 if not args.dry_run:
-                    jug.Task(dock_algo(
+                    dock_algo(
                         args.box_center,
                         args.box_size,
                         frame_path,
                         lig_path,
                         docked_lig_path
-                    ))
+                    )
