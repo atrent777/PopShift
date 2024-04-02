@@ -71,7 +71,7 @@ cluster_rmsd 2.0
 
 
 @jug.TaskGenerator
-def dock_vina(box_center, box_size, exhaustiveness, receptor_path, ligand_path, output_path):
+def dock_vina(box_center, box_size, receptor_path, ligand_path, output_path, exhaustiveness=32):
     from vina import Vina
     v = Vina(sf_name='vina', cpu=exhaustiveness)
     v.set_receptor(str(receptor_path))
@@ -83,7 +83,7 @@ def dock_vina(box_center, box_size, exhaustiveness, receptor_path, ligand_path, 
 
 
 @jug.TaskGenerator
-def dock_smina(box_center, box_size, exhaustiveness, receptor_path, ligand_path, output_path, cpu=1):
+def dock_smina(box_center, box_size,  receptor_path, ligand_path, output_path, exhaustiveness=32,cpu=1):
     return sp.run(['smina', '--receptor', str(receptor_path), '--ligand', str(ligand_path),
                    '--center_x', f'{box_center[0]}',
                    '--center_y', f'{box_center[1]}',
@@ -97,8 +97,9 @@ def dock_smina(box_center, box_size, exhaustiveness, receptor_path, ligand_path,
                    '--out', str(output_path)])
 
 @jug.TaskGenerator
-def dock_gnina(box_center, box_size, exhaustiveness, receptor_path, ligand_path, output_path, 
-               num_modes=1, cnn_scoring='rescore', addH=0, cnn_freeze_receptor='--cnn_freeze_receptor', cpu=1):
+def dock_gnina(box_center, box_size, receptor_path, ligand_path, output_path, 
+               num_modes=1, cnn_scoring='rescore', addH=0, exhaustiveness=32,
+               cnn_freeze_receptor='--cnn_freeze_receptor', cpu=1):
     return sp.run(['gina', '--receptor', str(receptor_path), '--ligand', str(ligand_path),
                    '--center_x', f'{box_center[0]}',
                    '--center_y', f'{box_center[1]}',
@@ -228,9 +229,12 @@ if __name__ == '__main__' or jug.is_jug_running():
     # Make output dirs.
     for p in output_paths:
         p.mkdir(exist_ok=True, parents=True)
+    # get dock task generator set up.
+    dock_algo_name = args.docking_algorithm
+    dock_algo = docking_methods[args.docking_algorithm]
 
     # if docking using SMINA, get pdbqts; otherwise, use mol2s, and prep docking function
-    if args.docking_algorithm == 'plants':
+    if dock_algo_name == 'plants':
         if args.plants_path.is_file():
             plants_functor = plants_docker(plants_exe_path=args.plants_path, plants_template=plantsconfig_template, smina=args.rescore_smina)
             docking_methods['plants'] = plants_functor
@@ -238,19 +242,16 @@ if __name__ == '__main__' or jug.is_jug_running():
             print(f'ERROR: Plants path is {args.plants_path}, which is not a file.')
             exit(1)
 
-    # get dock task generator set up.
-    dock_algo_name = args.docking_algorithm
-    dock_algo = docking_methods[args.docking_algorithm]
 
     # uses recursive glob. Must be sorted to get same order across runs.
     if dock_algo_name == 'gnina':
         frame_paths = sorted(map(lambda x: x.with_suffix('.pdb'), path_receptor.rglob('*.pdbqt')))
         if args.cnn_freeze_receptor:
             dock_algo = partial(dock_algo, num_modes=args.num_modes, cnn_scoring=args.cnn_scoring, 
-                                cnn_freeze_receptor='--cnn_freeze_receptor', cpu=args.cpu)
+                                cnn_freeze_receptor='--cnn_freeze_receptor', cpu=args.cpu, exhaustiveness=args.exhaustiveness)
         else:
             dock_algo = partial(dock_algo, num_modes=args.num_modes, cnn_scoring=args.cnn_scoring, 
-                                cpu=args.cpu)
+                                cpu=args.cpu, exhaustiveness=args.exhaustiveness)
     else: 
         frame_paths = sorted(path_receptor.rglob('*.pdbqt'))
 
