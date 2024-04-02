@@ -189,6 +189,8 @@ if __name__ == '__main__' or jug.is_jug_running():
     parser.add_argument('--cpu', type=int, default=1,
                         help='Number of CPUs _per docking job_. Leave at 1 unless using a method bottlenecked '
                         'by the availability of an accelerator like a GPU.')
+    parser.add_argument('--num_modes', type=int, default=1,
+                        help='Number of binding modes to ask for.')
     parser.add_argument('--cnn-scoring', type=str, default='rescore',
                         help='If using GNINA for docking, pass this argument through to call to gnina.')
     parser.add_argument('--cnn-freeze-receptor', default=True, action=ap.BooleanOptionalAction,
