@@ -17,7 +17,6 @@ Using Jug, run docking calculations across a collection of picked and prepped fr
     51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 """
 import jug
-from vina import Vina
 import argparse as ap
 import subprocess as sp
 from pathlib import Path
@@ -73,6 +72,7 @@ cluster_rmsd 2.0
 
 @jug.TaskGenerator
 def dock_vina(box_center, box_size, exhaustiveness, receptor_path, ligand_path, output_path):
+    from vina import Vina
     v = Vina(sf_name='vina', cpu=exhaustiveness)
     v.set_receptor(str(receptor_path))
     v.set_ligand_from_file(str(ligand_path))
