@@ -98,7 +98,7 @@ def dock_smina(box_center, box_size, exhaustiveness, receptor_path, ligand_path,
 
 @jug.TaskGenerator
 def dock_gnina(box_center, box_size, exhaustiveness, receptor_path, ligand_path, output_path, 
-               num_modes=1, cnn_mode='rescore', addH=0, cnn_freeze_receptor='--cnn_freeze_receptor', cpu=1):
+               num_modes=1, cnn_scoring='rescore', addH=0, cnn_freeze_receptor='--cnn_freeze_receptor', cpu=1):
     return sp.run(['gina', '--receptor', str(receptor_path), '--ligand', str(ligand_path),
                    '--center_x', f'{box_center[0]}',
                    '--center_y', f'{box_center[1]}',
@@ -106,7 +106,7 @@ def dock_gnina(box_center, box_size, exhaustiveness, receptor_path, ligand_path,
                    '--size_x', f'{box_size[0]}',
                    '--size_y', f'{box_size[1]}',
                    '--size_z', f'{box_size[2]}',
-                   '--cnn_scoring', f'{cnn_mode}',
+                   '--cnn_scoring', f'{cnn_scoring}',
                    '--exhaustiveness', f'{exhaustiveness}',
                    '--num_modes', f'{num_modes}',
                    '--addH', f'{addH}',
@@ -246,10 +246,10 @@ if __name__ == '__main__' or jug.is_jug_running():
     if dock_algo_name == 'gnina':
         frame_paths = sorted(map(lambda x: x.with_suffix('.pdb'), path_receptor.rglob('*.pdbqt')))
         if args.cnn_freeze_receptor:
-            dock_algo = partial(dock_algo, num_modes=args.num_modes, cnn_mode=args.cnn_mode, 
+            dock_algo = partial(dock_algo, num_modes=args.num_modes, cnn_scoring=args.cnn_scoring, 
                                 cnn_freeze_receptor='--cnn_freeze_receptor', cpu=args.cpu)
         else:
-            dock_algo = partial(dock_algo, num_modes=args.num_modes, cnn_mode=args.cnn_mode, 
+            dock_algo = partial(dock_algo, num_modes=args.num_modes, cnn_scoring=args.cnn_scoring, 
                                 cpu=args.cpu)
     else: 
         frame_paths = sorted(path_receptor.rglob('*.pdbqt'))
