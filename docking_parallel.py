@@ -83,7 +83,7 @@ def dock_vina(box_center, box_size, exhaustiveness, receptor_path, ligand_path, 
 
 
 @jug.TaskGenerator
-def dock_smina(box_center, box_size, exhaustiveness, receptor_path, ligand_path, output_path):
+def dock_smina(box_center, box_size, exhaustiveness, receptor_path, ligand_path, output_path, cpus=1):
     return sp.run(['smina', '--receptor', str(receptor_path), '--ligand', str(ligand_path),
                    '--center_x', f'{box_center[0]}',
                    '--center_y', f'{box_center[1]}',
@@ -92,13 +92,13 @@ def dock_smina(box_center, box_size, exhaustiveness, receptor_path, ligand_path,
                    '--size_y', f'{box_size[1]}',
                    '--size_z', f'{box_size[2]}',
                    '--exhaustiveness', f'{exhaustiveness}',
-                   '--cpu', '1',
+                   '--cpu', f'{cpus}',
                    '--num_modes', '1',
                    '--out', str(output_path)])
 
 @jug.TaskGenerator
 def dock_gnina(box_center, box_size, exhaustiveness, receptor_path, ligand_path, output_path, 
-               num_modes=1, cnn_mode='rescore', addH=0, cnn_freeze_receptor='--cnn_freeze_receptor'):
+               num_modes=1, cnn_mode='rescore', addH=0, cnn_freeze_receptor='--cnn_freeze_receptor', cpus=1):
     return sp.run(['gina', '--receptor', str(receptor_path), '--ligand', str(ligand_path),
                    '--center_x', f'{box_center[0]}',
                    '--center_y', f'{box_center[1]}',
@@ -110,6 +110,7 @@ def dock_gnina(box_center, box_size, exhaustiveness, receptor_path, ligand_path,
                    '--exhaustiveness', f'{exhaustiveness}',
                    '--num_modes', f'{num_modes}',
                    '--addH', f'{addH}',
+                   '--cpu', f'{cpus}'
                    f'{cnn_freeze_receptor}',
                    '--out', str(output_path)])
 
@@ -157,6 +158,7 @@ class plants_docker:
 docking_methods = {
     'vina': dock_vina,
     'smina': dock_smina,
+    'gnina': dock_gnina,
     'plants': None
 }
 
@@ -184,6 +186,9 @@ if __name__ == '__main__' or jug.is_jug_running():
     parser.add_argument('-d', '--docking-algorithm', default='vina',
                         choices=docking_methods.keys(),
                         help='Pick which docking algorithm to use.')
+    parser.add_argument('--cpus', type=int, default=1,
+                        help='Number of CPUs _per docking job_. Leave at 1 unless using a method bottlenecked '
+                        'by the availability of an accelerator like a GPU.')
     parser.add_argument('--cnn-scoring', type=str, default='rescore',
                         help='If using GNINA for docking, pass this argument through to call to gnina.')
     parser.add_argument('--cnn-freeze-receptor', default=True, action=ap.BooleanOptionalAction,
@@ -239,9 +244,11 @@ if __name__ == '__main__' or jug.is_jug_running():
     if dock_algo_name == 'gnina':
         frame_paths = sorted(map(lambda x: x.with_suffix('.pdb'), path_receptor.rglob('*.pdbqt')))
         if args.cnn_freeze_receptor:
-            dock_algo = partial(dock_algo, num_modes=args.num_modes, cnn_mode=args.cnn_mode, cnn_freeze_receptor='--cnn_freeze_receptor')
+            dock_algo = partial(dock_algo, num_modes=args.num_modes, cnn_mode=args.cnn_mode, 
+                                cnn_freeze_receptor='--cnn_freeze_receptor', cpus=args.cpus)
         else:
-            dock_algo = partial(dock_algo, num_modes=args.num_modes, cnn_mode=args.cnn_mode)
+            dock_algo = partial(dock_algo, num_modes=args.num_modes, cnn_mode=args.cnn_mode, 
+                                cpus=args.cpus)
     else: 
         frame_paths = sorted(path_receptor.rglob('*.pdbqt'))
 
