@@ -1,9 +1,9 @@
 import openmm as mm
 from openmm import app as app
-import argparse
+import argparse as ap
 from pathlib import Path
 
-p = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+p = ap.ArgumentParser(formatter_class=ap.ArgumentDefaultsHelpFormatter)
 p.add_argument('receptor_pdb', type=Path,
                help='path to receptor pdb to build openmm system with.')
 p.add_argument('ligand_mol2', type=Path,

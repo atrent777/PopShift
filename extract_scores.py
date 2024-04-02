@@ -20,7 +20,7 @@ created by docking_parallel.py.
 from enspara import ra
 import numpy as np
 import multiprocessing as mp
-import argparse
+import argparse as ap
 import re
 from pathlib import Path
 import pickle
@@ -72,10 +72,10 @@ extract_types = {
 }
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
+    parser = ap.ArgumentParser()
     parser.add_argument('docking_runs', nargs='+',
                         help='Path(s) to docked ligand directories, containing PDBQTs.')
-    parser.add_argument('--centers', action=argparse.BooleanOptionalAction, default=False,
+    parser.add_argument('--centers', action=ap.BooleanOptionalAction, default=False,
                         help='If thrown, expect that all pdbqts for a given ligand will be '
                         'together in one large directory, with state numbers in file '
                         'names (4x mydockrun/myligand/state000123.pdbqt).')
@@ -83,7 +83,7 @@ if __name__ == '__main__':
                         help='If provided, search for provided regex in result file names, '
                         'then turn all numbers from within the match into a state index.'
                         ' Implies "--centers".')
-    parser.add_argument('--replicas', action=argparse.BooleanOptionalAction, default=False,
+    parser.add_argument('--replicas', action=ap.BooleanOptionalAction, default=False,
                         help='If thrown, expect that there will be an additional level of depth '
                         'of the directory structure named something like "replica0".')
     parser.add_argument('--nprocs', '-n', type=int, default=1,

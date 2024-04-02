@@ -24,7 +24,7 @@
 import os
 import subprocess as sp
 import sys
-import argparse
+import argparse as ap
 import glob
 import multiprocessing as mp
 from pathlib import Path
@@ -83,8 +83,8 @@ charge_methods = {
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser = ap.ArgumentParser(
+        formatter_class=ap.ArgumentDefaultsHelpFormatter)
     parser.add_argument('-p', '--protein_dir',
                         help='Path to protein directory')
     parser.add_argument('-l', '--ligand_dir',

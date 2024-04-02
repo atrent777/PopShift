@@ -27,7 +27,7 @@ import json
 from sys import argv
 from itertools import repeat
 
-import argparse
+import argparse as ap
 
 
 # helper to condense list appending during input file reading.
@@ -271,8 +271,8 @@ def run_cli(raw_args=None):
     T = 310.0  # Kelvin
     unit_scale = 0.001  # by default convert free energy to kilo-energy units.
 
-    parser = argparse.ArgumentParser(
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser = ap.ArgumentParser(
+        formatter_class=ap.ArgumentDefaultsHelpFormatter)
     subparsers = parser.add_subparsers(dest='subparser_name',
                                        help='Select mode of input. Either samples from trajectories, '
                                        'or samples from each bin in an MSM.')
@@ -309,14 +309,14 @@ def run_cli(raw_args=None):
     trj_parser.add_argument('assignments', type=str,
                             help='Name of discretized trajectory.')
     # optional args to control traj reading
-    trj_parser.add_argument('--emma-dtraj', '-e', action=argparse.BooleanOptionalAction,
+    trj_parser.add_argument('--emma-dtraj', '-e', action=ap.BooleanOptionalAction,
                             help='If thrown, read discretized trajectory as a PyEMMA dtraj.')
     trj_parser.add_argument('binding_fes', type=str, nargs="+",
                             help='Name of binding FE file for some compound. Expects .npy by default.')
     trj_parser.add_argument('--stride', '-s', type=int, default=1,
                             help='Stride-rate through dtrajs. Applied uniformly to frames. If using indexed score '
                                  'input, and indices match those of dtrajs (already strided), set to 1.')
-    trj_parser.add_argument('--index-from-file', action=argparse.BooleanOptionalAction,
+    trj_parser.add_argument('--index-from-file', action=ap.BooleanOptionalAction,
                             help='If thrown, interprets binding_fes file(s) as list of RA indexes, '
                             'with the last element containing the binding FE/score. Stride is applied to frames still.')
     trj_parser.set_defaults(func=interp_trj_samples)

@@ -19,10 +19,10 @@ with aligned frames.
     51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 """
 import loos
-import argparse
+import argparse as ap
 from sys import stdout
 
-p = argparse.ArgumentParser(argument_default=True)
+p = ap.ArgumentParser(argument_default=True)
 p.add_argument('center_x', type=float, help='Center x coordinate')
 p.add_argument('center_y', type=float, help='Center y coordinate')
 p.add_argument('center_z', type=float, help='Center z coordinate')

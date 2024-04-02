@@ -18,7 +18,7 @@ receptor and ligand conformations by reference receptor conformation.
     with this program; if not, write to the Free Software Foundation, Inc.,
     51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 """
-import argparse
+import argparse as ap
 from pathlib import Path
 import json
 import loos
@@ -100,9 +100,9 @@ def reductively_unify_ags(sample_ag, expt_ag):
 
 
 if __name__ == '__main__':
-    p = argparse.ArgumentParser("Read ligand and a receptor pdbs (as from docking);"
+    p = ap.ArgumentParser("Read ligand and a receptor pdbs (as from docking);"
                                 " align and compute RMSD to reference.",
-                                formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+                                formatter_class=ap.ArgumentDefaultsHelpFormatter)
     p.add_argument('--all-subset', type=str, default=" && ! hydrogen",
                    help='Subset to all selection strings. To disable, provide empty'
                    ' string as argument.')
@@ -111,9 +111,9 @@ if __name__ == '__main__':
                    ' modeled in, remove all but the provided conformer letter.'
                         ' Usually, if there are multiple confs, they are lettered '
                         'A and B.')
-    p.add_argument('--debug', action=argparse.BooleanOptionalAction,
+    p.add_argument('--debug', action=ap.BooleanOptionalAction,
                    help='Throw to get debugging messages printed (to stdout).')
-    p.add_argument('--extract-score', action=argparse.BooleanOptionalAction,
+    p.add_argument('--extract-score', action=ap.BooleanOptionalAction,
                    help='Throw to add scores to emitted json.')
     p.add_argument('--ligand-sel', type=str, default='all',
                    help='Selection to apply to ligand PDBs.')
@@ -134,7 +134,7 @@ if __name__ == '__main__':
                         'those of receptor-sel.')
     p.add_argument('--poses', '-P', type=Path, nargs='+', required=True,
                    help='Ligand poses in order matched to receptor conformations.')
-    p.add_argument('--spyrmsd', action=argparse.BooleanOptionalAction, default=True,
+    p.add_argument('--spyrmsd', action=ap.BooleanOptionalAction, default=True,
                    help='If thrown, compute spyrmsd using software from Meli and Biggin, DOI:10.1186/s13321-020-00455-2')
     p.add_argument('sample_model', type=Path,
                    help='A model file that can be used to read the samples.')

@@ -17,7 +17,7 @@ MSM, then iteratively aligns them using a user provided subset of atoms.
     with this program; if not, write to the Free Software Foundation, Inc.,
     51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 """
-import argparse
+import argparse as ap
 from pathlib import Path
 import numpy as np
 from enspara import ra
@@ -36,7 +36,7 @@ def floatpair(s, delim=','):
         start_ind, end_ind = map(float, s.split(delim))
         return start_ind, end_ind
     except:
-        raise argparse.ArgumentTypeError('Float pairs must be specified as "decimal.one,decimal.two"')
+        raise ap.ArgumentTypeError('Float pairs must be specified as "decimal.one,decimal.two"')
 
 
 def get_assigns_no_map_no_unbox(assignments, nstates):
@@ -291,7 +291,7 @@ if __name__ == '__main__':
         'kmeans': get_frames_using_kmeans
     }
 
-    parser = argparse.ArgumentParser()
+    parser = ap.ArgumentParser()
     parser.add_argument('receptor_name', type=str,
                         help="Name to use to use as top-level directory for the docking run tree.")
     parser.add_argument('model', type=str,
@@ -313,13 +313,13 @@ if __name__ == '__main__':
                             'with one selecting these resids.')
     parser.add_argument('--assignments', type=str, default=None,
                         help='h5 file with assignments from which MSM was built. Obligatory unless using "centers" selector.')
-    parser.add_argument('--clear-bonds', action=argparse.BooleanOptionalAction,
+    parser.add_argument('--clear-bonds', action=ap.BooleanOptionalAction,
                         help='If thrown, remove connectivity information from model. If incorrect bonds present, but bonds'
                             ' are needed, use this in conjunction with "--find-bonds" to first clear old bonds then assign'
                             ' new ones.')
     parser.add_argument('--find-bonds', type=floatpair, default=None,
                         help='If no bonds (CONECT records in PDB) are provided in model, find bonds using these cutoffs.')
-    parser.add_argument('--make-receptor-sel-chain-A', action=argparse.BooleanOptionalAction, default=True,
+    parser.add_argument('--make-receptor-sel-chain-A', action=ap.BooleanOptionalAction, default=True,
                         help='If thrown, make all atoms a member of chain "A" when writing PDBs.')
     parser.add_argument('--mapping', '-m', type=Path, default=None,
                         help='Use a supplied path to a mapping or MSM to handle eq_probs that have been reduced '
@@ -335,7 +335,7 @@ if __name__ == '__main__':
     parser.add_argument('--total-per-bin', default=None, type=str,
                         help='Text file with totals to draw from each MSM bin. Should be one column of totals, '
                             'where the row index corresponds to the bin and the entry is the number of frames to draw.')
-    parser.add_argument('--write-bin-trajs', action=argparse.BooleanOptionalAction,
+    parser.add_argument('--write-bin-trajs', action=ap.BooleanOptionalAction,
                         help='If thrown, write a DCD with the selected frames in each bin directory.')
     parser.add_argument('--write-bin-dtraj', type=Path, default=None,
                         help='Write an enspara RaggedArray with each frame index selected to provided path.')

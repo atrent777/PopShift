@@ -18,7 +18,7 @@ Using Jug, run docking calculations across a collection of picked and prepped fr
 """
 import jug
 from vina import Vina
-import argparse
+import argparse as ap
 import subprocess as sp
 from pathlib import Path
 from functools import partial
@@ -30,7 +30,7 @@ def coordreader(s, delim=','):
         x, y, z = map(float, s.split(delim))
         return x, y, z
     except:
-        raise argparse.ArgumentTypeError(
+        raise ap.ArgumentTypeError(
             "Center-coordinates and dimensions must be specified as 'x,y,z'")
 
 
@@ -39,7 +39,7 @@ def intrange(s, delim=','):
         start_ind, end_ind = map(int, s.split(delim))
         return start_ind, end_ind
     except:
-        raise argparse.ArgumentTypeError(
+        raise ap.ArgumentTypeError(
             'Index ranges must be specified as "start_ind,end_ind"')
 
 
@@ -96,6 +96,22 @@ def dock_smina(box_center, box_size, exhaustiveness, receptor_path, ligand_path,
                    '--num_modes', '1',
                    '--out', str(output_path)])
 
+@jug.TaskGenerator
+def dock_gnina(box_center, box_size, exhaustiveness, receptor_path, ligand_path, output_path, 
+               num_modes=1, cnn_mode='rescore', addH=0, cnn_freeze_receptor='--cnn_freeze_receptor'):
+    return sp.run(['gina', '--receptor', str(receptor_path), '--ligand', str(ligand_path),
+                   '--center_x', f'{box_center[0]}',
+                   '--center_y', f'{box_center[1]}',
+                   '--center_z', f'{box_center[2]}',
+                   '--size_x', f'{box_size[0]}',
+                   '--size_y', f'{box_size[1]}',
+                   '--size_z', f'{box_size[2]}',
+                   '--cnn_scoring', f'{cnn_mode}',
+                   '--exhaustiveness', f'{exhaustiveness}',
+                   '--num_modes', f'{num_modes}',
+                   '--addH', f'{addH}',
+                   f'{cnn_freeze_receptor}',
+                   '--out', str(output_path)])
 
 # make a functor to hold plants exe and plants template.
 class plants_docker:
@@ -145,8 +161,8 @@ docking_methods = {
 }
 
 if __name__ == '__main__' or jug.is_jug_running():
-    parser = argparse.ArgumentParser(
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser = ap.ArgumentParser(
+        formatter_class=ap.ArgumentDefaultsHelpFormatter)
 
     parser.add_argument('receptor_dir',
                         help='Path to protein directory')
@@ -168,15 +184,19 @@ if __name__ == '__main__' or jug.is_jug_running():
     parser.add_argument('-d', '--docking-algorithm', default='vina',
                         choices=docking_methods.keys(),
                         help='Pick which docking algorithm to use.')
+    parser.add_argument('--cnn-scoring', type=str, default='rescore',
+                        help='If using GNINA for docking, pass this argument through to call to gnina.')
+    parser.add_argument('--cnn-freeze-receptor', default=True, action=ap.BooleanOptionalAction,
+                        help='If using GNINA, pass this onto the call.')
     parser.add_argument('--plants-path', default=None, type=Path,
                         help='If docking with plants, provide plants path.')
-    parser.add_argument('--rescore-smina', default=True, action=argparse.BooleanOptionalAction,
+    parser.add_argument('--rescore-smina', default=True, action=ap.BooleanOptionalAction,
                         help='If docking with PLANTS, rescore the best pose with SMINA.')
-    parser.add_argument('-s', '--symlink-receptors', action=argparse.BooleanOptionalAction,
+    parser.add_argument('-s', '--symlink-receptors', action=ap.BooleanOptionalAction,
                         help='Create relative symlinks for receptor PDBs into each docked ligand dir.')
     parser.add_argument('-t', '--top-dir', type=Path, default=Path.cwd(),
                         help='Set a top directory for relative symlinks.')
-    parser.add_argument('--dry-run', action=argparse.BooleanOptionalAction,
+    parser.add_argument('--dry-run', action=ap.BooleanOptionalAction,
                         help="If thrown, don't actually run docking; just create directories and (optionally) symlinks.")
 
     args = parser.parse_args()
@@ -210,8 +230,20 @@ if __name__ == '__main__' or jug.is_jug_running():
         else:
             print(f'ERROR: Plants path is {args.plants_path}, which is not a file.')
             exit(1)
+
+    # get dock task generator set up.
+    dock_algo_name = args.docking_algorithm
+    dock_algo = docking_methods[args.docking_algorithm]
+
     # uses recursive glob. Must be sorted to get same order across runs.
-    frame_paths = sorted(path_receptor.rglob('*.pdbqt'))
+    if dock_algo_name == 'gnina':
+        frame_paths = sorted(map(lambda x: x.with_suffix('.pdb'), path_receptor.rglob('*.pdbqt')))
+        if args.cnn_freeze_receptor:
+            dock_algo = partial(dock_algo, num_modes=args.num_modes, cnn_mode=args.cnn_mode, cnn_freeze_receptor='--cnn_freeze_receptor')
+        else:
+            dock_algo = partial(dock_algo, num_modes=args.num_modes, cnn_mode=args.cnn_mode)
+    else: 
+        frame_paths = sorted(path_receptor.rglob('*.pdbqt'))
 
     for run_path in output_paths:
         for ligand in ligand_paths:
@@ -225,7 +257,7 @@ if __name__ == '__main__' or jug.is_jug_running():
                 if not docked_dir_path.is_dir():
                     docked_dir_path.mkdir(exist_ok=True, parents=True)
                 if not args.dry_run:
-                    jug.Task(docking_methods[args.docking_algorithm](
+                    jug.Task(dock_algo(
                         args.box_center,
                         args.box_size,
                         frame_path,
