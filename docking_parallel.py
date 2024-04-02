@@ -178,6 +178,9 @@ if __name__ == '__main__' or jug.is_jug_running():
                         help='Comma delimited string listing lx,ly,lz as the lengths of the x, y and z box-sides.')
     parser.add_argument('ligand_list', nargs="+",
                         help='Path(s) to ligand pdbqts. Alternatively a txt file with a ligand path on each line.')
+    parser.add_argument('--ligand-name-from-dir', action=ap.BooleanOptionalAction, default=False,
+                        help='If thrown, assume that the ligand name for outfiles should come from the directory' 
+                        ' above the ligand specifying file--for GB rescoring.')
     parser.add_argument('-r', '--replicas', type=intrange, default=None,
                         help='Number of replica docking runs to perform.')
     parser.add_argument('-e', '--exhaustiveness', type=int, default=32,
@@ -258,7 +261,10 @@ if __name__ == '__main__' or jug.is_jug_running():
     for run_path in output_paths:
         for ligand in ligand_paths:
             lig_path = Path(ligand)
-            ligand_name = lig_path.stem
+            if args.lignad_name_from_dir:
+                ligand_name = lig_path.parent.stem
+            else:
+                ligand_name = lig_path.stem
             lig_output_path = run_path / ligand_name
             for frame_path in frame_paths:
                 docked_lig_path = lig_output_path.joinpath(
