@@ -132,13 +132,13 @@ def kd_from_kcal_mol(fe, rt):
 
 
 def kcal_mol_from_kd(kd, rt):
-    return np.log(kd * rt)
+    return np.log(kd) * rt
 
 
 # reductions below here
 def one_site_popshift(frame_weights, trimmed_binding_fes, rt):
     rtn = -rt
-    return rtn * np.log(np.sum(frame_weights * np.exp(trimmed_binding_fes / rtn)))
+    return rtn * np.log(np.sum(frame_weights * np.exp(trimmed_binding_fes.astype(np.float128) / rtn, dtype=np.float128), dtype=np.float128))
 
 
 def weighted_avg(frame_weights, trimmed_binding_fes):
