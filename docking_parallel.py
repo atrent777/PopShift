@@ -100,7 +100,7 @@ def dock_smina(box_center, box_size,  receptor_path, ligand_path, output_path, e
 def dock_gnina(box_center, box_size, receptor_path, ligand_path, output_path, 
                num_modes=1, cnn_scoring='rescore', addH=0, exhaustiveness=32,
                cnn_freeze_receptor='--cnn_freeze_receptor', cpu=1):
-    return sp.run(['gina', '--receptor', str(receptor_path), '--ligand', str(ligand_path),
+    return sp.run(['gnina', '--receptor', str(receptor_path), '--ligand', str(ligand_path),
                    '--center_x', f'{box_center[0]}',
                    '--center_y', f'{box_center[1]}',
                    '--center_z', f'{box_center[2]}',
@@ -261,7 +261,7 @@ if __name__ == '__main__' or jug.is_jug_running():
     for run_path in output_paths:
         for ligand in ligand_paths:
             lig_path = Path(ligand)
-            if args.lignad_name_from_dir:
+            if args.ligand_name_from_dir:
                 ligand_name = lig_path.parent.stem
             else:
                 ligand_name = lig_path.stem
