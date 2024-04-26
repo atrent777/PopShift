@@ -213,10 +213,10 @@ if __name__ == '__main__' or jug.is_jug_running():
     args = parser.parse_args()
     if len(args.ligand_list) == 1:
         ligand_list_path = Path(args.ligand_list[0])
-        if ligand_list_path.suffix != '.pdbqt':
-            ligand_paths = ligand_list_path.read_text().split()
-        else:
+        if ligand_list_path.suffix == '.pdbqt' or ligand_list_path.suffix == '.sdf' :
             ligand_paths = args.ligand_list
+        else:
+            ligand_paths = ligand_list_path.read_text().split()
     else:
         ligand_paths = args.ligand_list
     path_receptor = Path(args.receptor_dir)
