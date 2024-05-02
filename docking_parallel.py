@@ -177,7 +177,7 @@ if __name__ == '__main__' or jug.is_jug_running():
     parser.add_argument('box_size', type=coordreader,
                         help='Comma delimited string listing lx,ly,lz as the lengths of the x, y and z box-sides.')
     parser.add_argument('ligand_list', nargs="+",
-                        help='Path(s) to ligand pdbqts. Alternatively a txt file with a ligand path on each line.')
+                        help='Path(s) to ligand pdbqts, pdbs, or sdfs. Alternatively a txt file with a ligand path on each line.')
     parser.add_argument('--ligand-name-from-dir', action=ap.BooleanOptionalAction, default=False,
                         help='If thrown, assume that the ligand name for outfiles should come from the directory' 
                         ' above the ligand specifying file--for GB rescoring.')
@@ -213,7 +213,7 @@ if __name__ == '__main__' or jug.is_jug_running():
     args = parser.parse_args()
     if len(args.ligand_list) == 1:
         ligand_list_path = Path(args.ligand_list[0])
-        if ligand_list_path.suffix == '.pdbqt' or ligand_list_path.suffix == '.sdf' :
+        if ligand_list_path.suffix == '.pdbqt' or ligand_list_path.suffix == '.sdf' or ligand_list_path.suffix == '.pdb':
             ligand_paths = args.ligand_list
         else:
             ligand_paths = ligand_list_path.read_text().split()
@@ -248,7 +248,7 @@ if __name__ == '__main__' or jug.is_jug_running():
 
     # uses recursive glob. Must be sorted to get same order across runs.
     if dock_algo_name == 'gnina':
-        frame_paths = sorted(map(lambda x: x.with_suffix('.pdb'), path_receptor.rglob('*.pdbqt')))
+        frame_paths = sorted(map(lambda x: x.with_suffix('.pdb'), path_receptor.rglob('*.pdb')))
         if args.cnn_freeze_receptor:
             dock_algo = partial(dock_algo, num_modes=args.num_modes, cnn_scoring=args.cnn_scoring, 
                                 cnn_freeze_receptor='--cnn_freeze_receptor', cpu=args.cpu, exhaustiveness=args.exhaustiveness)
@@ -267,9 +267,12 @@ if __name__ == '__main__' or jug.is_jug_running():
                 ligand_name = lig_path.stem
             lig_output_path = run_path / ligand_name
             for frame_path in frame_paths:
-                docked_lig_path = lig_output_path.joinpath(
-                    *frame_path.parts[-2:]).with_suffix('.sdf')
-                docked_dir_path = docked_lig_path.parent
+                if dock_algo_name == 'gnina': docked_lig_path = lig_output_path.joinpath(
+                    *frame_path.parts[-2:]).with_suffix('.sdf') ; 
+                    docked_dir_path = docked_lig_path.parent
+                elif dock_algo_name == 'smina' or dock_algo_name == 'vina': docked_lig_path = lig_output_path.joinpath(
+                    *frame_path.parts[-2:]).with_suffix('.pdbqt') ; 
+                    docked_dir_path = docked_lig_path.parent
                 if not docked_dir_path.is_dir():
                     docked_dir_path.mkdir(exist_ok=True, parents=True)
                 if not args.dry_run:
