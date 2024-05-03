@@ -271,7 +271,7 @@ if __name__ == '__main__' or jug.is_jug_running():
                     docked_lig_path = lig_output_path.joinpath(*frame_path.parts[-2:]).with_suffix('.sdf')
                     docked_dir_path = docked_lig_path.parent
                 elif dock_algo_name == 'smina' or dock_algo_name == 'vina': 
-                    docked_lig_path = lig_output_path.joinpath(*frame_path.parts[-2:]).with_suffix('.pdbqt') ; 
+                    docked_lig_path = lig_output_path.joinpath(*frame_path.parts[-2:]).with_suffix('.pdbqt')
                     docked_dir_path = docked_lig_path.parent
                 if not docked_dir_path.is_dir():
                     docked_dir_path.mkdir(exist_ok=True, parents=True)
