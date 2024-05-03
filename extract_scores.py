@@ -48,6 +48,20 @@ def extract_score_from_smina_pdbqt(pdbqts, search_re=re.compile(r'^REMARK minimi
                     break
     return np.array(outlist, dtype='f4')
 
+def extract_score_from_gnina_sdf(sdfs, search_re=re.compile(r'> <CNNaffinity>')):
+    outlist = []
+    # print(pdbqts)
+    for sdf in sdfs:
+        with sdf.open() as f:
+            nextLine = False
+            for line in f:
+                if search_re.match(line):
+                    nextLine=True
+                elif nextLine:
+                    outlist.append(float(line))
+                    nextLine = False
+                    break
+    return np.array(outlist, dtype='f4')
 
 number_pattern = re.compile('\d+')
 
@@ -68,15 +82,16 @@ def rip_number_bytag(p: Path, tag: re.Pattern, numpattern=number_pattern):
 
 extract_types = {
     'vina': extract_score_from_vina_pdbqt,
-    'smina': extract_score_from_smina_pdbqt
+    'smina': extract_score_from_smina_pdbqt,
+    'gnina': extract_score_from_gnina_sdf,
 }
 
 if __name__ == '__main__':
     parser = ap.ArgumentParser()
     parser.add_argument('docking_runs', nargs='+',
-                        help='Path(s) to docked ligand directories, containing PDBQTs.')
+                        help='Path(s) to docked ligand directories, containing PDBQTs or SDFs.')
     parser.add_argument('--centers', action=ap.BooleanOptionalAction, default=False,
-                        help='If thrown, expect that all pdbqts for a given ligand will be '
+                        help='If thrown, expect that all ligand files for a given ligand will be '
                         'together in one large directory, with state numbers in file '
                         'names (4x mydockrun/myligand/state000123.pdbqt).')
     parser.add_argument('--centers-tag', type=str, default=None,
@@ -145,7 +160,12 @@ if __name__ == '__main__':
                 else:
                     state_paths = sorted((state_path for state_path in ligand_path.iterdir()),
                                          key=lambda x: int(x.stem))
-                    result_paths = [sorted((sample_path for sample_path in state_path.glob('*.pdbqt')),
+                    if args.result_type != 'gnina':
+                        result_paths = [sorted((sample_path for sample_path in state_path.glob('*.pdbqt')),
+                                           key=result_sorter)
+                                    for state_path in state_paths]
+                    else:
+                        result_paths = [sorted((sample_path for sample_path in state_path.glob('*.sdf')),
                                            key=result_sorter)
                                     for state_path in state_paths]
                 extracted_results = pool.map(extractor, result_paths)
