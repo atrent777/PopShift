@@ -267,11 +267,11 @@ if __name__ == '__main__' or jug.is_jug_running():
                 ligand_name = lig_path.stem
             lig_output_path = run_path / ligand_name
             for frame_path in frame_paths:
-                if dock_algo_name == 'gnina': docked_lig_path = lig_output_path.joinpath(
-                    *frame_path.parts[-2:]).with_suffix('.sdf') ; 
+                if dock_algo_name == 'gnina': 
+                    docked_lig_path = lig_output_path.joinpath(*frame_path.parts[-2:]).with_suffix('.sdf')
                     docked_dir_path = docked_lig_path.parent
-                elif dock_algo_name == 'smina' or dock_algo_name == 'vina': docked_lig_path = lig_output_path.joinpath(
-                    *frame_path.parts[-2:]).with_suffix('.pdbqt') ; 
+                elif dock_algo_name == 'smina' or dock_algo_name == 'vina': 
+                    docked_lig_path = lig_output_path.joinpath(*frame_path.parts[-2:]).with_suffix('.pdbqt') ; 
                     docked_dir_path = docked_lig_path.parent
                 if not docked_dir_path.is_dir():
                     docked_dir_path.mkdir(exist_ok=True, parents=True)
