@@ -42,7 +42,7 @@ p.add_argument('out_dir', type=Path,
                help='Name of directory to write parameterized jsons and systems to.')
 p.add_argument('--ligand-sdf', '-s', action=ap.BooleanOptionalAction, default=False,
                help='If thrown, interpret ligand as path to SDF file.')
-p.add_argument('--ligand-ff', type=str, default='openff-2.1.0-unconstrained.offxml',
+p.add_argument('--ligand-ff', type=str, default='openff_unconstrained-2.2.0.offxml',
                help='Name of force field to use as an argument to SMIRNOFFTemplateGenerator.')
 p.add_argument('--receptor-ff', type=str, default='amber/protein.ff14SB.xml',
                help='Name of force field xml to use as argument to openmm.ForceField.')
@@ -95,7 +95,7 @@ off_serialize(args.out_dir, 'ligand-top', lig_top)
 off_serialize(args.out_dir, 'complex-top', rl_complex)
 
 # Create the SMIRNOFF template generator with the default installed force field
-smirnoff = SMIRNOFFTemplateGenerator(molecules=ligand)
+smirnoff = SMIRNOFFTemplateGenerator(molecules=ligand, forcefield=args.ligand_ff)
 # Create an OpenMM ForceField object with AMBER ff14SB and TIP3P with compatible ions
 forcefield = ForceField(args.receptor_ff, 'implicit/' + args.implicit)
 # Register the SMIRNOFF template generator
