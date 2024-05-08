@@ -86,7 +86,7 @@ lig_top = ligand.to_topology()
 if args.write_sdf:
     # atom order not preserved by Molecule.to_topology().
     top_ligand = Molecule.from_topology(lig_top)
-    top_ligand.to_file(args.out_dir.with_suffix('.sdf'), 'sdf')
+    top_ligand.to_file(str(args.out_dir.with_suffix('.sdf')), 'sdf')
 # always do this receptor first!
 rl_complex = receptor + lig_top
 # rl_complex = lig_top + receptor 
