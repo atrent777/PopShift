@@ -3,7 +3,7 @@ from openff.toolkit import Molecule, Topology
 try:
     from openff.toolkit.utils.nagl_wrapper import NAGLToolkitWrapper
     from openff.nagl_models import get_models_by_type
-    nagl_model_path = get_models_by_type("am1bcc")[0]
+    nagl_model_path = get_models_by_type("am1bcc")[-1]
 except ModuleNotFoundError:
     nagl_model_path = None
     print('Could not find NAGLToolkitWrapper; is openff-nagl installed?',
@@ -70,10 +70,10 @@ if args.ligand_sdf:
     ligand = Molecule.from_file(args.ligand, 'sdf')
 else:
     ligand = Molecule.from_smiles(args.ligand)
+ligand.generate_conformers(n_conformers=1)
 if nagl_model_path:
     ligand.assign_partial_charges(nagl_model_path, toolkit_registry=NAGLToolkitWrapper())
 else:
-    ligand.generate_conformers(n_conformers=1)
     print('Generated ligand conformers from SMILES. Prepping charges.', flush=True)
     ligand.assign_partial_charges(partial_charge_method='am1bcc', 
                                 use_conformers=ligand.conformers)
