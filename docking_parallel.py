@@ -99,7 +99,7 @@ def dock_smina(box_center, box_size,  receptor_path, ligand_path, output_path, e
 @jug.TaskGenerator
 def dock_gnina(box_center, box_size, receptor_path, ligand_path, output_path, 
                num_modes=1, cnn_scoring='rescore', addH=0, exhaustiveness=32,
-               cnn_freeze_receptor='--cnn_freeze_receptor', cpu=1):
+               cnn_freeze_receptor='--cnn_freeze_receptor', pose_sort_order='CNNaffinity', cpu=1):
     return sp.run(['gnina', '--receptor', str(receptor_path), '--ligand', str(ligand_path),
                    '--center_x', f'{box_center[0]}',
                    '--center_y', f'{box_center[1]}',
@@ -110,6 +110,7 @@ def dock_gnina(box_center, box_size, receptor_path, ligand_path, output_path,
                    '--cnn_scoring', f'{cnn_scoring}',
                    '--exhaustiveness', f'{exhaustiveness}',
                    '--num_modes', f'{num_modes}',
+                   '--pose_sort_order', pose_sort_order,
                    '--addH', f'{addH}',
                    '--cpu', f'{cpu}',
                    f'{cnn_freeze_receptor}',
