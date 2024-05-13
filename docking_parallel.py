@@ -204,6 +204,9 @@ if __name__ == '__main__' or jug.is_jug_running():
                         ' above the ligand specifying file--for GB rescoring.')
     parser.add_argument('-r', '--replicas', type=intrange, default=None,
                         help='Number of replica docking runs to perform.')
+    parser.add_argument('-c', '--centers', action=ap.BooleanOptionalAction, default=False,
+                        help='If thrown, assume receptor structures are all in one large directory, rather '
+                        'than subdirs corresponding to state identity. Write docked poses in the same fashion.')
     parser.add_argument('-e', '--exhaustiveness', type=int, default=32,
                         help='AutoDock-Vina exhaustiveness parameter. Threads used proportional to this value.')
     parser.add_argument('--protein-prefix', type=str, default='frame00',
@@ -278,7 +281,12 @@ if __name__ == '__main__' or jug.is_jug_running():
                                 cpu=args.cpu, exhaustiveness=args.exhaustiveness)
     else: 
         frame_paths = sorted(path_receptor.rglob('*.pdbqt'))
-
+    # if docking to centers, or files without directory structure, 
+    # only use file name for pose writing
+    if args.centers:  
+        child_include_lvl = -1 
+    else: # include the directory above the frame file name, as this will record state id.
+        child_include_lvl = -2
     for run_path in output_paths:
         for ligand in ligand_paths:
             lig_path = Path(ligand)
@@ -289,10 +297,10 @@ if __name__ == '__main__' or jug.is_jug_running():
             lig_output_path = run_path / ligand_name
             for frame_path in frame_paths:
                 if dock_algo_name == 'gnina': 
-                    docked_lig_path = lig_output_path.joinpath(*frame_path.parts[-2:]).with_suffix('.sdf')
+                    docked_lig_path = lig_output_path.joinpath(*frame_path.parts[-child_include_lvl:]).with_suffix('.sdf')
                     docked_dir_path = docked_lig_path.parent
                 elif dock_algo_name == 'smina' or dock_algo_name == 'vina': 
-                    docked_lig_path = lig_output_path.joinpath(*frame_path.parts[-2:]).with_suffix('.pdbqt')
+                    docked_lig_path = lig_output_path.joinpath(*frame_path.parts[-child_include_lvl:]).with_suffix('.pdbqt')
                     docked_dir_path = docked_lig_path.parent
                 if not docked_dir_path.is_dir():
                     docked_dir_path.mkdir(exist_ok=True, parents=True)
