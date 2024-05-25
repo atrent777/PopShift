@@ -37,7 +37,7 @@ args = p.parse_args()
 
 box = loos.AtomicGroup()
 center_crd = loos.GCoord(args.center_x, args.center_y, args.center_z)
-center = loos.Atom(1, 'center', center_crd)
+center = loos.Atom(1, 'cen', center_crd)
 gs = args.grid_spacing
 half_x = (args.edge_length_x / 2) * gs
 half_y = (args.edge_length_y / 2) * gs
